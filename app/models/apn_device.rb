@@ -1,23 +1,30 @@
 class ApnDevice < APN::Device
   attr_accessible :host_name, :pass_key, :token, :app_id
   
-  has_many :machines
+  #### Associations ####
+  has_many :machines, :dependent => :destroy
   
+  #### Validations ####
   validates :host_name, presence: true
 
-#  Simply override token format here
-      validates_format_of :token, :with => /^((.)+ )$/ 
+
+
+#  validates_format_of :token, :with => /.+/ 
 
 	def is_iphone?
 		self.token.length < 80
 	end
 
 	def notify_device(message)
-		notification = APN::Notification.new
-		notification.device = self
-		notification.sound = "default"
-		notification.alert = message
-		notification.save
+		if self.is_iphone?
+			notification = APN::Notification.new
+			notification.device = self
+			notification.sound = "default"
+			notification.alert = message
+			notification.save
+		else
+			# send message to android
+		end
 	end
 
 	def call_device tel,text
@@ -33,4 +40,10 @@ class ApnDevice < APN::Device
 		end
 	end
 
+
+  #### Methods ####
+  def pass_key_in_hash
+    { pass_key: pass_key }
+  end
+    
 end
