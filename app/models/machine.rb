@@ -4,4 +4,5 @@ class Machine < ActiveRecord::Base
   belongs_to :apn_device
   
   validates :machine_name, :mac_address, presence: true
+  validates :mac_address, :uniqueness => true
 end
