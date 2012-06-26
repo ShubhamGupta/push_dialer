@@ -54,6 +54,9 @@ GEM
       rack-mount
     hashie (1.2.0)
     hike (1.2.1)
+    httparty (0.8.3)
+      multi_json (~> 1.0)
+      multi_xml
     i18n (0.6.0)
     journey (1.0.4)
     jquery-rails (2.0.2)
@@ -123,6 +126,7 @@ DEPENDENCIES
   apn_on_rails (>= 0.5)
   coffee-rails (~> 3.2.1)
   grape
+  httparty
   jquery-rails
   mysql2
   rails (= 3.2.6)
