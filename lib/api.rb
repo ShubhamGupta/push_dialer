@@ -31,7 +31,7 @@ module PushDialer
     	post 'create' do
       	device = ApnDevice.find_by_token(params[:token])
       	if device
-      	  return true
+      	  {'response' => true}
       	else
         	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token], :app_id=>1 )
         	device.pass_key = (rand(0.0)*100000).to_i
