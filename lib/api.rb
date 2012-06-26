@@ -23,13 +23,13 @@ module PushDialer
     end
     
     resource 'apn_devices' do
-      # before { authenticate! } # added to each resource for limiting un-authorized access
+      before { authenticate! } # added to each resource for limiting un-authorized access
 
     	#Below method returns the randomly* generated pass_key in valid json format
     	#Scenario : device sends post request for pairing
     	#params[:token]
     	#Optional params => host_name
-    	get 'create' do
+    	post 'create' do
       	device = ApnDevice.find_by_token(params[:token])
       	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token] ) if !device
       	device.pass_key = (rand(0.0)*100000).to_i
@@ -46,7 +46,7 @@ module PushDialer
     end #resource ApnDevice
     
     resource 'machines' do
-    
+    	before { authenticate! }
 		  #This method returns all machines paired with the device. ie: list of macs -- -- so they can be unpaired
 		  #Request by device params[:token]
     	get '/index'	do
@@ -57,16 +57,17 @@ module PushDialer
       # Mac sends request to pair with an device. 
       # params -> Mac address and machine_name and 5-digit pass_key
 
-			get '/create' do
+			post '/create' do
 				device = ApnDevice.find_by_pass_key(params[:pass_key])
 				if device
 					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name])
 					machine.apn_device_id = device.id 
 					if machine.save
-						device.pass_key = nil
-						device.save
-						device.notify_device("#{machine.machine_name} paired successfully.")  #And
-						{ 'Response' => 'Pairing successful' }                                #Send success message to Mac
+#						device.pass_key = nil
+						if device.update_attributes(:pass_key => nil)
+							device.notify_device("#{machine.machine_name} paired successfully.")  #And
+							{ 'Response' => 'Pairing successful' }                                #Send success message to Mac
+						end
 					else
             # Send error message to Mac "Pairing failed. Try again"
             error!({ 'error' => 'Pairing failed. Try again' }, 500)               # 500: Internal Server Error
@@ -83,8 +84,9 @@ module PushDialer
 		  	if params[:token]                                                         # unpairing from device
 		  		device = ApnDevice.find_by_token params[:token]
 					if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
-		  			Machine.find_by_mac_address(params[:mac_address]).destroy             # unpaired from device
-		  			device.machines # changed ??
+		  			machine = Machine.find_by_mac_address(params[:mac_address])             # unpaired from device
+		  			machine.destroy if machine
+		  			device.machines
 		  			                                                                      # Device successfully unpaired
 		  		else
             # error message to device # unpairing failed
@@ -102,16 +104,21 @@ module PushDialer
       # params -> MAC address, tel, sms (optional) 
 		  post '/connect' do
 		  	machine = Machine.find_by_mac_address(params[:mac_address])
-		  	if machine 
-		  		machine.apn_device.call_device(params[:tel], params[:sms])
-		  		{ 'Response' => 'Call Initiation Request Sent' }
+		  	if machine && params[:tel]
+					if params[:tel].to_i > 0 and params[:tel].size == 10 
+						machine.apn_device.call_device(params[:tel], params[:sms])
+						{ 'Response' => 'Call Initiation Request Sent' }
+					else
+						error!({ 'error' => 'Invalid No.', 'Tel' => params[:tel] }, 401)
+					end
 		  	else
 		  		#Error message to machine
-          error!({ 'error' => 'invalid machine address', 'params' => params[:mac_address] }, 401)
+          error!({ 'error' => 'Cant connect', 'params' => params[:mac_address] }, 401)
 		  	end 
 		  end
 		  
 		end #resource machine
+    
     
   end #Class
 end #Module

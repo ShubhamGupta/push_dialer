@@ -1,6 +1,6 @@
 require 'rake'
 class ApnDevice < APN::Device
-  require 'net/http'
+
   include HTTParty
 
   attr_accessible :host_name, :pass_key, :token, :app_id
@@ -20,7 +20,7 @@ class ApnDevice < APN::Device
 			notification = APN::Notification.new
 			notification.device = self
 			notification.sound = "default"
-			notification.alert = message
+			notification.alert = {show: message}
 			notification.save
 			ApnDevice.send_push_notification_to_ios
 		else
@@ -28,17 +28,18 @@ class ApnDevice < APN::Device
 			ApnDevice.send_push_notification_to_android(message)
 		end
 	end
-
-	def call_device tel,text
+	
+	def call_device tel, text = nil
 		if self.is_iphone?
 			notification = APN::Notification.new
 			notification.device = self
 			notification.sound = "default"
-			notification.alert = message # where's the message ??
+			notification.alert = {tel: tel, sms: text} # where's the message ??
 			notification.save
 			#send push notification
 			ApnDevice.send_push_notification_to_ios
 		else
+			ApnDevice.send_push_notification_to_android(:tel => tel, :sms => text)
 			#send request to google URL
 		end
 	end
@@ -49,8 +50,6 @@ class ApnDevice < APN::Device
 		Rake.application = rake
 		rake.init
 		rake.load_rakefile
-#		Rake.application.init
-#		Rake.application.load_rakefile
   	Rake::Task["apn:notifications:deliver"].invoke
   end
   
@@ -69,7 +68,6 @@ class ApnDevice < APN::Device
                             }.merge(parameters), 
                 :headers => { "Authorization" => ANDROID_HEADER_AUTH } 
               }
-              logger.info(parameters)
     HTTParty.post(AC2DM_URL, options)
   end
 
