@@ -101,7 +101,7 @@ module PushDialer
 		  post '/connect' do
 		  	machine = Machine.find_by_mac_address(params[:mac_address])
 		  	if machine 
-		  		machine.apn_device.call_device (params[:tel], params[:sms])
+		  		machine.apn_device.call_device(params[:tel], params[:sms])
 		  		{ 'Response' => 'Call Initiation Request Sent' }
 		  	else
 		  		#Error message to machine
