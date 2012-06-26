@@ -20,6 +20,7 @@ gem 'mysql2'
 gem 'apn_on_rails', '>= 0.5'  #:git => 'https://github.com/natescherer/apn_on_rails.git', :branch => 'rails3'  
 gem 'jquery-rails'
 gem 'grape'
+gem 'httparty'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

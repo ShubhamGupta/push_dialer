@@ -1,5 +1,8 @@
 require 'rake'
 class ApnDevice < APN::Device
+  require 'net/http'
+  include HTTParty
+
   attr_accessible :host_name, :pass_key, :token, :app_id
   
   #### Associations ####
@@ -22,6 +25,7 @@ class ApnDevice < APN::Device
 			ApnDevice.send_push_notification_to_ios
 		else
 			# send message to android
+			ApnDevice.send_push_notification_to_android(message)
 		end
 	end
 
@@ -49,13 +53,32 @@ class ApnDevice < APN::Device
 #		Rake.application.load_rakefile
   	Rake::Task["apn:notifications:deliver"].invoke
   end
+  
+  def self.send_push_notification_to_android(message=nil, tel=nil, sms=nil)
+    parameters = Hash.new
+    parameters["data.message"] = message unless message.blank?
+    if !tel.blank? && !sms.blank?
+      parameters["data.number"] = "sms:#{tel}"
+      parameters["data.sms"] = sms
+    elsif !tel.blank? && sms.blank?
+      parameters["data.number"] = "tel:#{tel}" unless tel.blank?
+    end
+    
+    options = { :body =>    { 'registration_id' => token,#SAMPLE_ANDROID_REGISTRATION_ID,
+                              'collapse_key'    => '0'
+                            }.merge(parameters), 
+                :headers => { "Authorization" => ANDROID_HEADER_AUTH } 
+              }
+              logger.info(parameters)
+    HTTParty.post(AC2DM_URL, options)
+  end
 
   #### Methods ####
   def pass_key_in_hash
     { pass_key: pass_key }
   end
   
-  def in_hash(options={})
+  def in_hash
     {
       :token => token,
       :host_name => host_name,
