@@ -10,8 +10,14 @@
   configatron.apn.cert = File.join(Rails.root, 'config', 'apple_push_notification_development.pem')
   
 # development (feedback):
-
+<<<<<<< HEAD
+  configatron.apn.feedback.passphrase => ''
+  configatron.apn.feedback.port => 2196
+  configatron.apn.feedback.host => 'feedback.sandbox.push.apple.com'
+  configatron.apn.feedback.cert => File.join(RAILS_ROOT, 'config', 'apple_push_notification_development.pem')
+=======
   configatron.apn.feedback.passphrase = ''
   configatron.apn.feedback.port = 2196
   configatron.apn.feedback.host = 'feedback.sandbox.push.apple.com'
   configatron.apn.feedback.cert = File.join(Rails.root, 'config', 'apple_push_notification_development.pem')
+>>>>>>> 8a853cf1db4215f0a1ceb5274cef24f86f648e34
