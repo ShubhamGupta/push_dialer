@@ -11,14 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120623061634) do
-
-  create_table "apn_apps", :force => true do |t|
-    t.text     "apn_dev_cert"
-    t.text     "apn_prod_cert"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-  end
+ActiveRecord::Schema.define(:version => 20120622091813) do
 
   create_table "apn_devices", :force => true do |t|
     t.string   "token",                           :default => "", :null => false
@@ -27,7 +20,6 @@ ActiveRecord::Schema.define(:version => 20120623061634) do
     t.datetime "last_registered_at"
     t.string   "host_name"
     t.string   "pass_key",           :limit => 5
-    t.integer  "app_id"
   end
 
   add_index "apn_devices", ["token"], :name => "index_apn_devices_on_token", :unique => true

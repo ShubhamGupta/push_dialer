@@ -29,7 +29,7 @@ module PushDialer
     	#Scenario : device sends post request for pairing
     	#params[:token]
     	#Optional params => host_name
-    	post 'create' do
+    	get 'create' do
       	device = ApnDevice.find_by_token(params[:token])
       	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token] ) if !device
       	device.pass_key = (rand(0.0)*100000).to_i

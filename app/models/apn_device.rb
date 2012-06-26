@@ -9,7 +9,7 @@ class ApnDevice < APN::Device
 
 
 
-#  validates_format_of :token, :with => /.+/ 
+  super.validates_format_of :token, :with => /.+/ 
 
 	def is_iphone?
 		self.token.length < 80
