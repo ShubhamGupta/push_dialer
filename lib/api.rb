@@ -1,8 +1,9 @@
 require 'apn_on_rails'
 
 module PushDialer
-  
-  class API < Grape::API
+
+	class API < Grape::API
+
   	format :json
   	default_format :json
   	error_format :json
@@ -22,75 +23,93 @@ module PushDialer
     end
     
     resource 'apn_devices' do
-      # before { authenticate! } # added to each resource for skipping un-authorized access
+      # before { authenticate! } # added to each resource for limiting un-authorized access
 
     	#Below method returns the randomly* generated pass_key in valid json format
-    	#Scenario : iPhone sends post request for pairing
+    	#Scenario : device sends post request for pairing
     	#params[:token]
     	#Optional params => host_name
     	post 'create' do
       	device = ApnDevice.find_by_token(params[:token])
-      	if device
-      	  {'response' => true}
-      	else
-        	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token], :app_id=>1 )
-        	device.pass_key = (rand(0.0)*100000).to_i
-        	device.pass_key_in_hash if device.save      	  
-    	  end
+      	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token] ) if !device
+      	device.pass_key = (rand(0.0)*100000).to_i
+      	device.pass_key_in_hash if device.save(:validate => false)
       end
       
       #Request from mac : sends request to get the iPhone with which it is paired
       #Needed when app launched in MAC
       get '/show' do
       	machine = Machine.find_by_mac_address params[:mac_address]
-        machine.apn_device if machine
+        machine.apn_device.in_hash if machine
       end
       
-    end   #resource ApnDevice
+    end #resource ApnDevice
     
-
     resource 'machines' do
-  	  #This method returns all machines paired with the iPhone. ie: list of macs--
-  	  # --so they can be unpaired
-  	  #Request by iPhone params[:token]
-    	get '/show'	do
-    		iPhone = ApnDevice.find_by_token(params[:token])
-    		iPhone.machines if iPhone
+    
+		  #This method returns all machines paired with the device. ie: list of macs -- -- so they can be unpaired
+		  #Request by device params[:token]
+    	get '/index'	do
+    		device = ApnDevice.find_by_token(params[:token])
+    		device.machines if device
     	end
     	
-#    	Mac sends request to pair with an iPhone. 
-#    	params -> Mac address and pass_key and machine_name
+      # Mac sends request to pair with an device. 
+      # params -> Mac address and machine_name and 5-digit pass_key
 
 			post '/create' do
-				iPhone = ApnDevice.find_by_pass_key(params[:pass_key])
-				if iPhone
-					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name]) 
-					machine.apn_device_id = iPhone.id
+				device = ApnDevice.find_by_pass_key(params[:pass_key])
+				if device
+					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name], :apn_device_id => device.id) 
 					if machine.save
-						iPhone.update_attributes(:pass_key => nil)
-						#push notification to iPhone
+						device.update_attributes(:pass_key => nil)
+						device.notify_device("#{machine.machine_name} paired successfully.")  #And
+						{ 'Response' => 'Pairing successful' }                                #Send success message to Mac
+					else
+            # Send error message to Mac "Pairing failed. Try again"
+            error!({ 'error' => 'Pairing failed. Try again' }, 500)               # 500: Internal Server Error
 					end
 				else
-#					send error message to MAC for invalid pass_key
-          error!({ 'error' => 'invalid pass_key', 'params' => params[:pass_key] }, 401)
+          # send error message to MAC for invalid pass_key
+          error!({ 'error' => 'invalid pass_key', 'params' => params[:pass_key] }, 401) # 401: Unauthorized
 				end
 			end
 			
-			#unpairing from MAC Or iPhone
-			delete do
-		  	if params[:token]   #unpairing from iPhone
-		  		iPhone = ApnDevice.find_by_token params[:token]
-		  		if iPhone && Machine.where(:apn_device_id => iPhone.id).first #machine belongs to that iPhone from which request came 
-		  			Machine.find_by_mac_address(params[:mac_address]).destroy
-		  			## send list of leftout machines paired with this iPhone (json)
+
+			#unpairing from MAC Or device
+			post '/unpair' do
+		  	if params[:token]                                                         # unpairing from device
+		  		device = ApnDevice.find_by_token params[:token]
+					if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
+		  			Machine.find_by_mac_address(params[:mac_address]).destroy             # unpaired from device
+		  			device.machines # changed ??
+		  			                                                                      # Device successfully unpaired
+		  		else
+            # error message to device # unpairing failed
+            error!({ 'error' => 'unpairing failed' }, 412)                        # 412: Precondition Failed
 		  		end
-		  	else  #unpairing from MAC
-		  		Machine.find_by_mac_address(params[:mac_address]).destroy
-		  		#Push notification to iPhone
+		  	else
+		  		machine = Machine.find_by_mac_address(params[:mac_address])             # unpaired from mac
+		  		machine.destroy
+		  		#Push notification to device
+		  		machine.apn_device.notify_device( "#{machine.machine_name} unpaired." )
 		  	end
 		  end
 		  
-		end #resource Machine
+      # connect is for sending call or text request to the device.
+      # params -> MAC address, tel, sms (optional) 
+		  post '/connect' do
+		  	machine = Machine.find_by_mac_address(params[:mac_address])
+		  	if machine 
+		  		machine.apn_device.call_device (params[:tel], params[:sms])
+		  		{ 'Response' => 'Call Initiation Request Sent' }
+		  	else
+		  		#Error message to machine
+          error!({ 'error' => 'invalid machine address', 'params' => params[:mac_address] }, 401)
+		  	end 
+		  end
+		  
+		end #resource machine
     
   end #Class
 end #Module
