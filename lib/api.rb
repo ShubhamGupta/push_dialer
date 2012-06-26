@@ -11,9 +11,9 @@ module PushDialer
     
     version 'v1', :using => :path
     
-    rescue_from :all do |e|
-      rack_response({ :message => "rescued from #{e.class.name}" })
-    end
+#    rescue_from :all do |e|
+#      rack_response({ :message => "rescued from #{e.class.name}" })
+#    end
 
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
@@ -33,7 +33,7 @@ module PushDialer
       	device = ApnDevice.find_by_token(params[:token])
       	device = ApnDevice.new(:host_name=>params[:host_name], :token=>params[:token] ) if !device
       	device.pass_key = (rand(0.0)*100000).to_i
-      	device.pass_key_in_hash if device.save(:validate => false)
+      	device.pass_key_in_hash if device.save!(:validate => true)
       end
       
       #Request from mac : sends request to get the iPhone with which it is paired
@@ -57,12 +57,14 @@ module PushDialer
       # Mac sends request to pair with an device. 
       # params -> Mac address and machine_name and 5-digit pass_key
 
-			post '/create' do
+			get '/create' do
 				device = ApnDevice.find_by_pass_key(params[:pass_key])
 				if device
-					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name], :apn_device_id => device.id) 
+					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name])
+					machine.apn_device_id = device.id 
 					if machine.save
-						device.update_attributes(:pass_key => nil)
+						device.pass_key = nil
+						device.save
 						device.notify_device("#{machine.machine_name} paired successfully.")  #And
 						{ 'Response' => 'Pairing successful' }                                #Send success message to Mac
 					else

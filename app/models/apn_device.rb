@@ -1,3 +1,4 @@
+require 'rake'
 class ApnDevice < APN::Device
   attr_accessible :host_name, :pass_key, :token, :app_id
   
@@ -6,10 +7,6 @@ class ApnDevice < APN::Device
   
   #### Validations ####
   validates :host_name, presence: true
-
-
-
-  super.validates_format_of :token, :with => /.+/ 
 
 	def is_iphone?
 		self.token.length < 80
@@ -43,6 +40,13 @@ class ApnDevice < APN::Device
 	end
 
   def self.send_push_notification_to_ios
+  	
+		rake = Rake::Application.new
+		Rake.application = rake
+		rake.init
+		rake.load_rakefile
+#		Rake.application.init
+#		Rake.application.load_rakefile
   	Rake::Task["apn:notifications:deliver"].invoke
   end
 

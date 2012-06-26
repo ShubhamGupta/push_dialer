@@ -5,7 +5,7 @@ class Machine < ActiveRecord::Base
   
   validates :machine_name, :mac_address, :apn_device_id, presence: true
   validates :mac_address, :uniqueness => true
-  validates_format_of :mac_address, :with => /^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$/
+#  validates_format_of :mac_address, :with => /^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$/
   
   
   # override super#to_json to hide certain attributes
