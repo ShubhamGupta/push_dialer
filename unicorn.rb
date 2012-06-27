@@ -7,7 +7,7 @@ worker_processes 4
 
 # listen on both a Unix domain socket and a TCP port,
 # we use a shorter backlog for quicker failover when busy
-listen "/tmp/my_site.socket", :backlog => 64
+listen "/tmp/push_dialer.socket", :backlog => 64
 
 # Preload our app for more speed
 preload_app true
@@ -15,7 +15,7 @@ preload_app true
 # nuke workers after 30 seconds instead of 60 seconds (the default)
 timeout 30
 
-pid "/tmp/unicorn.push_dialer.pid"
+pid "#{shared_path}/pids/unicorn.pid" #"/tmp/unicorn.push_dialer.pid"
 
 # Production specific settings
 if env == "production"
@@ -40,7 +40,7 @@ before_fork do |server, worker|
 
   # Before forking, kill the master process that belongs to the .oldbin PID.
   # This enables 0 downtime deploys.
-  old_pid = "/tmp/unicorn.my_site.pid.oldbin"
+  old_pid = "/tmp/unicorn.push_dialer.pid.oldbin"
   if File.exists?(old_pid) && server.pid != old_pid
     begin
       Process.kill("QUIT", File.read(old_pid).to_i)
