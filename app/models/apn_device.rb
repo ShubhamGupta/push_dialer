@@ -7,9 +7,9 @@ class ApnDevice < APN::Device
   
   #### Associations ####
   has_many :machines, :dependent => :destroy
-  
+#validates_format_of :token, :with => /(.)+/, :unless => Proc.new {|device| device.token.size > 10}  
   #### Validations ####
-  validates :host_name, presence: true
+#  validates :host_name, presence: true
 
 	def is_iphone?
 		self.token.length < 80
