@@ -38,5 +38,5 @@ production:
   database: push_dialer_production
   pool: 5
   username: root
-  password:
-  socket: /var/run/mysqld/mysqld.sock
+  password: dialerpass123
+  # socket: /var/run/mysqld/mysqld.sock

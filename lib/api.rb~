@@ -120,7 +120,7 @@ module PushDialer
 
 			#unpairing from MAC Or device
 			post '/unpair' do
-
+<<<<<<< HEAD
 			  error!({ 'error' => "Mac Address Not Found" }, 412) if !params[:mac_address]
 		  	if params[:token]   # unpairing from device
 		  		device = ApnDevice.find_by_token params[:token] 
@@ -129,7 +129,15 @@ module PushDialer
 						machine.destroy if machine
 						device.machines
 						# Device successfully unpaired
-
+=======
+		  	if params[:token]                                                         # unpairing from device
+		  		device = ApnDevice.find_by_token params[:token]
+					if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
+		  			machine = Machine.find_by_mac_address(params[:mac_address])           # unpaired from device
+		  			machine.destroy if machine
+		  			device.machines
+		  			                                                                      # Device successfully unpaired
+>>>>>>> 030c140a07a3e4b87d2dc7f7766b2677f6b35230
 		  		else
             # error message to device # unpairing failed
             error!({ 'error' => 'unpairing failed' }, 412)# 412: Precondition Failed
