@@ -11,15 +11,33 @@ module PushDialer
     
     version 'v1', :using => :path
     
-#    rescue_from :all do |e|
-#      rack_response({ :message => "rescued from #{e.class.name}" })
-#    end
+   rescue_from :all do |e|
+     rack_response({ :message => "rescued from #{e.class.name}" })
+   end
 
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
       def authenticate!
         error!('401 Unauthorized', 401) unless env['HTTP_AUTHORIZATION'] == "HUMPTyVIN-SOlPUsH-DIaLERdUMPTY"
       end
+    end
+    
+    # GET /version
+    #   Retrieves the current api version
+    #
+    # Headers
+    #   none
+    #
+    # Params
+    #   none
+    #
+    # Example
+    #   
+    #   curl -X GET http://localhost:3000/api/v1/version
+    #
+    # Returns a hash with the api's version information
+    get :version do
+      {version: 1, vendor: 'remote dialer'}
     end
     
     resource 'apn_devices' do
@@ -84,7 +102,7 @@ module PushDialer
 		  	if params[:token]                                                         # unpairing from device
 		  		device = ApnDevice.find_by_token params[:token]
 					if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
-		  			machine = Machine.find_by_mac_address(params[:mac_address])             # unpaired from device
+		  			machine = Machine.find_by_mac_address(params[:mac_address])           # unpaired from device
 		  			machine.destroy if machine
 		  			device.machines
 		  			                                                                      # Device successfully unpaired

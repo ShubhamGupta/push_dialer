@@ -45,7 +45,6 @@ class ApnDevice < APN::Device
 	end
 
   def self.send_push_notification_to_ios
-  	
 		rake = Rake::Application.new
 		Rake.application = rake
 		rake.init
