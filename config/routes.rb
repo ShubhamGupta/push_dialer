@@ -1,6 +1,9 @@
 require 'api'
+
 PushDialer::Application.routes.draw do
-mount PushDialer::API => "/"
+  
+  mount PushDialer::API => "/"
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
