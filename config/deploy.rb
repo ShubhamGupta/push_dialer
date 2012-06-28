@@ -36,8 +36,7 @@ default_environment["RAILS_ENV"] = 'production'
 # default_environment["GEM_HOME"]     = "--"
 # default_environment["GEM_PATH"]     = "--"
 # default_environment["RUBY_VERSION"] = "ruby-1.9.2-p290"
-
-# default_run_options[:shell] = 'bash'
+default_environment['PATH'] = "/usr/local/bin:/usr/bin:/bin:/opt/bin:$PATH"
 
 namespace :deploy do
   desc "Deploy your application"
@@ -83,8 +82,7 @@ namespace :deploy do
   task :finalize_update, :except => { :no_release => true } do
     run "chmod -R g+w #{latest_release}" if fetch(:group_writable, true)
 
-    # mkdir -p is making sure that the directories are there for some SCM's that don't
-    # save empty folders
+    # mkdir -p is making sure that the directories are there for some SCM's that don't save empty folders
     run <<-CMD
       rm -rf #{latest_release}/log #{latest_release}/public/system #{latest_release}/tmp/pids &&
       mkdir -p #{latest_release}/public &&
@@ -104,17 +102,17 @@ namespace :deploy do
 
   desc "Zero-downtime restart of Unicorn"
   task :restart, :except => { :no_release => true } do
-    run "kill -s USR2 `cat /tmp/unicorn.push_dialer.pid`"
+    unicorn.restart
   end
 
   desc "Start unicorn"
   task :start, :except => { :no_release => true } do
-    run "cd #{current_path} ; bundle exec unicorn_rails -c unicorn.rb -D"
+    unicorn.start
   end
 
   desc "Stop unicorn"
   task :stop, :except => { :no_release => true } do
-    run "kill -s QUIT `cat /tmp/unicorn.push_dialer.pid`"
+    unicorn.stop
   end  
 
   namespace :rollback do
@@ -135,6 +133,24 @@ namespace :deploy do
       rollback.cleanup
     end
   end
+  
+  namespace :unicorn do
+    desc "Restart unicorn"
+    task :restart, :except => { :no_release => true } do
+      run "/etc/init.d/unicorn restart"
+    end
+
+    desc "Start unicorn"
+    task :start, :except => { :no_release => true } do
+      run "/etc/init.d/unicorn start"
+    end
+
+    desc "Stop unicorn"
+    task :stop, :except => { :no_release => true } do
+      run "/etc/init.d/unicorn stop"
+    end
+  end
+  
 end
 
 def run_rake(cmd)
@@ -143,22 +159,10 @@ end
 
 
 # set :application, "set your application name here"
-# set :repository,  "set your repository location here"
-# 
-# set :scm, :subversion
-# # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
-# 
-# role :web, "your web-server here"                          # Your HTTP server, Apache/etc
-# role :app, "your app-server here"                          # This may be the same as your `Web` server
-# role :db,  "your primary db-server here", :primary => true # This is where Rails migrations will run
-# role :db,  "your slave db-server here"
-# 
+
 # # if you want to clean up old releases on each deploy uncomment this:
 # # after "deploy:restart", "deploy:cleanup"
-# 
-# # if you're still using the script/reaper helper you will need
-# # these http://github.com/rails/irs_process_scripts
-# 
+
 # # If you are using Passenger mod_rails uncomment this:
 # # namespace :deploy do
 # #   task :start do ; end
