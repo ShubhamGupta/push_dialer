@@ -11,11 +11,9 @@ module PushDialer
     
     version 'v1', :using => :path
     
-
    rescue_from :all do |e|
      rack_response({ :message => "rescued from #{e.class.name}" })
    end
-
 
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
@@ -43,21 +41,21 @@ module PushDialer
     end
     
     resource 'apn_devices' do
-#      before { authenticate! } # added to each resource for limiting un-authorized access
+      before { authenticate! } # added to each resource for limiting un-authorized access
 
     	#Below method returns the randomly* generated pass_key in valid json format
     	#Scenario : device sends post request for pairing
     	#params[:token]
     	#Optional params => host_name
     	post 'create' do
-		    	error!({ 'error' => "Please send token" }, 412)	if !params[:token]
+		    	error!({ 'error' => "Please send token" }, 412)	unless params[:token]
 		    	device = ApnDevice.find_by_token(params[:token])
 		    	device = ApnDevice.new(:host_name=> params[:host_name] || "Device", :token=>params[:token] ) if !device
 		    	device.pass_key = 10000+rand(89999)
 		    	if device.valid?
-		    		device.pass_key_in_hash if device.save!(:validate => true)
+		    		device.pass_key_in_hash if device.save
 		    	else
-		    		if params[:token].size > 100 and device.save!(:validate => false)
+		    		if params[:token].size > 100 and device.save(:validate => false)
 				  		device.errors.clear
 				  		device.pass_key_in_hash 
 		    		else
@@ -69,7 +67,7 @@ module PushDialer
       #Request from mac : sends request to get the iPhone with which it is paired
       #Needed when app launched in MAC
       get '/show' do
-      	error!({ 'error' => "Mac Address Not Found" }, 412) if !params[:mac_address]
+      	error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
       	machine = Machine.find_by_mac_address params[:mac_address]
         machine.apn_device.in_hash if machine
       end
@@ -77,11 +75,11 @@ module PushDialer
     end #resource ApnDevice
     
     resource 'machines' do
-#    	before { authenticate! }
+    	before { authenticate! }
 		  #This method returns all machines paired with the device. ie: list of macs -- -- so they can be unpaired
 		  #Request by device params[:token]
     	get '/index'	do
-    		error!({ 'error' => "Device Token Not Found" }, 412) if !params[:token]
+    		error!({ 'error' => "Device Token Not Found" }, 412) unless params[:token]
     		device = ApnDevice.find_by_token(params[:token])
     		if device
 #    		Hash["machines", device.machines.to_json]
@@ -97,7 +95,7 @@ module PushDialer
       # params -> Mac address and machine_name and 5-digit pass_key
 
 			post '/create' do
-			  error!({ 'error' => "Invalid Request" }, 412) if ! (params[:mac_address] and params[:pass_key])
+			  error!({ 'error' => "Invalid Request" }, 412) unless (params[:mac_address] and params[:pass_key])
 				device = ApnDevice.find_by_pass_key(params[:pass_key])
 				if device
 					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name] || "Mac")
@@ -121,7 +119,7 @@ module PushDialer
 			#unpairing from MAC Or device
 			post '/unpair' do
 
-			  error!({ 'error' => "Mac Address Not Found" }, 412) if !params[:mac_address]
+			  error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
 		  	if params[:token]   # unpairing from device
 		  		device = ApnDevice.find_by_token params[:token] 
 		  		if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
@@ -149,7 +147,7 @@ module PushDialer
       # connect is for sending call or text request to the device.
       # params -> MAC address, tel, sms (optional) 
 		  post '/connect' do
-		  	error!({ 'error' => "Mac Address Not Found" }, 412) if !params[:mac_address]
+		  	error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
 		  	machine = Machine.find_by_mac_address(params[:mac_address])
 		  	if machine && params[:tel]
 					if params[:tel].to_i > 0 and params[:tel].size == 10 
