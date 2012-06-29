@@ -41,7 +41,7 @@ module PushDialer
     end
     
     resource 'apn_devices' do
-#      before { authenticate! } # added to each resource for limiting un-authorized access
+      before { authenticate! } # added to each resource for limiting un-authorized access
 
     	#Below method returns the randomly* generated pass_key in valid json format
     	#Scenario : device sends post request for pairing
@@ -76,7 +76,7 @@ module PushDialer
     end #resource ApnDevice
     
     resource 'machines' do
-#    	before { authenticate! }
+      before { authenticate! }
 		  #This method returns all machines paired with the device. ie: list of macs -- -- so they can be unpaired
 		  #Request by device params[:token]
     	get '/index'	do
