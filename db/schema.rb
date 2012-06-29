@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120629064129) do
+ActiveRecord::Schema.define(:version => 20120629123253) do
 
   create_table "android_devices", :force => true do |t|
     t.text     "token",           :null => false
@@ -101,8 +101,8 @@ ActiveRecord::Schema.define(:version => 20120629064129) do
     t.string   "machine_name"
     t.datetime "created_at",   :null => false
     t.datetime "updated_at",   :null => false
-    t.integer  "device_id"
-    t.string   "device_type"
+    t.integer  "phone_id"
+    t.string   "phone_type"
   end
 
 end

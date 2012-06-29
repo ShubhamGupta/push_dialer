@@ -6,7 +6,7 @@ class AndroidDevice < ActiveRecord::Base
   attr_accessible :host_name, :pass_key, :token, :registration_id
   
   #### Associations ####
-  has_many :machines, :as => :device, :dependent => :destroy
+  has_many :machines, :as => :phone, :dependent => :destroy
 
   #### Validations ####
   validates :token, :registration_id, presence: true, :uniqueness => true

@@ -1,12 +1,18 @@
+class APN::Device
+  self.abstract_class = true
+end
+
 require 'rake'
 class ApnDevice < APN::Device
-
+  set_table_name 'apn_devices'
+  
   include HTTParty
 
   attr_accessible :host_name, :pass_key, :token, :app_id
   
   #### Associations ####
-  has_many :machines, :as => :device, :dependent => :destroy
+  has_many :machines, :as => :phone, :dependent => :destroy
+  
   #### Validations ####
 
 
@@ -27,7 +33,7 @@ class ApnDevice < APN::Device
 		notification = APN::Notification.new
 		notification.device = self
 		notification.sound = "default"
-		notification.alert = {tel: tel, sms: text} # where's the message ??
+		notification.alert = {tel: tel, sms: text}
 		notification.save
 		#send push notification
 		ApnDevice.send_push_notification
