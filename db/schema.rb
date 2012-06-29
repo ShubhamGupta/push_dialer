@@ -11,7 +11,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120626085610) do
+ActiveRecord::Schema.define(:version => 20120629064129) do
+
+  create_table "android_devices", :force => true do |t|
+    t.text     "token",           :null => false
+    t.string   "host_name"
+    t.string   "pass_key"
+    t.text     "registration_id"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
+  end
 
   create_table "apn_apps", :force => true do |t|
     t.text     "apn_dev_cert"
@@ -88,11 +97,12 @@ ActiveRecord::Schema.define(:version => 20120626085610) do
   end
 
   create_table "machines", :force => true do |t|
-    t.integer  "apn_device_id"
     t.string   "mac_address"
     t.string   "machine_name"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+    t.integer  "device_id"
+    t.string   "device_type"
   end
 
 end
