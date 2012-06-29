@@ -1,8 +1,9 @@
 require "bundler/capistrano"
+require "whenever/capistrano"
 
 set :scm,             :git
 set :repository,      "git@github.com:ShubhamGupta/push_dialer.git"
-set :branch,          "master"
+set :branch,          "origin/master"
 set :migrate_target,  :current
 set :ssh_options,     { :forward_agent => true }
 set :rails_env,       "production"
@@ -21,6 +22,9 @@ set :runner,          "deploy"
 role :web,    "173.45.230.103"
 role :app,    "173.45.230.103"
 role :db,     "173.45.230.103", :primary => true
+
+set :application, "push_dialer"
+set :whenever_command, "bundle exec whenever"
 
 set(:latest_release)  { fetch(:current_path) }
 set(:release_path)    { fetch(:current_path) }
