@@ -16,9 +16,9 @@ class ApnDevice < APN::Device
   #### Validations ####
 
 
-	def is_iphone?
-		self.token.length < 80
-	end
+#	def is_iphone?
+#		self.token.length < 80
+#	end
 
 	def notify_device(message)
 		notification = APN::Notification.new

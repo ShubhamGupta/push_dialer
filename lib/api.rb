@@ -48,17 +48,17 @@ module PushDialer
     	#params[:token] alias for android_id
     	#params[:registration_id] => In case of android
     	#Optional params => host_name
+    	#Can move unless device to One place ????????
     	post 'create' do
 		    	error!({ 'error' => "Please send token" }, 412)	unless params[:token]
-		    	device = ApnDevice.find_by_token(params[:token]) || AndroidDevice.find_by_token(params[:token])
+		    	device = ApnDevice.where(:token => params[:token]).first || AndroidDevice.where(:token => params[:token]).first
 		    	if params[:registration_id]  #It is an android 
-		    		device = AndroidDevice.new(:host_name=> params[:host_name] || "AndroidDevice", :token=>params[:token], :registration_id => params[:registration_id] ) if !device
+		    		device = AndroidDevice.new(:host_name=> params[:host_name] || "AndroidDevice", :token=>params[:token], :registration_id => params[:registration_id] ) unless device
 		    	else
-		    		device = ApnDevice.new(:host_name=> params[:host_name] || "AppleDevice", :token=>params[:token] ) if !device
+		    		device = ApnDevice.new(:host_name=> params[:host_name] || "AppleDevice", :token=>params[:token] ) unless device
 		    	end
-		    	
+		    	#Random 5 digit pass_key
 		    	device.pass_key = 10000+rand(89999)
-#		    	if device.valid?
 	    		error!({ 'error' => "Can't save the device. #{device.errors.messages}" }, 412) unless device.save
 	    		device.pass_key_in_hash
       end
@@ -67,10 +67,10 @@ module PushDialer
       #Needed when app launched in MAC
       get '/show' do
       	error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
-      	machine = Machine.find_by_mac_address params[:mac_address]
+      	machine = Machine.where(:mac_address => params[:mac_address]).first
         #Returning token, host_name and pass_key
         error!({ 'error' => "You are not paired to any device." }, 412) unless machine
-        machine.device.in_hash# if machine
+        machine.phone.in_hash# if machine
       end
       
     end #resource ApnDevice
@@ -79,17 +79,14 @@ module PushDialer
       before { authenticate! }
 		  #This method returns all machines paired with the device. ie: list of macs -- -- so they can be unpaired
 		  #Request by device params[:token]
+
     	get '/index'	do
     		error!({ 'error' => "Device Token Not Found" }, 412) unless params[:token]
     		device = ApnDevice.where(:token => params[:token]).first || AndroidDevice.where(:token => params[:token]).first
-    		
-    		
-    		#{ 'Response' => 'No Device' } unless device
-    		if device
-    			"{\"machines\": #{device.machines.to_json}}"
-    		else
-    			error!({ 'error' => "Device Not Found" }, 412)
-    		end
+#    		{ 'Response' => 'No Device' } if !device
+    		error!({ 'Response' => "No Device" }, 412) unless device
+#  			"{\"machines\": #{device.machines.to_json}}"
+  			{ 'machines' => device.machines.to_json }
     	end
     	
       # Mac sends request to pair with an device. 
@@ -97,13 +94,12 @@ module PushDialer
 
 			post '/create' do
 			  error!({ 'error' => "Invalid Request" }, 412) unless (params[:mac_address] and params[:pass_key])
-				device = ApnDevice.find_by_pass_key(params[:pass_key]) || AndroidDevice.find_by_pass_key(params[:pass_key])
+				device = ApnDevice.where(:pass_key => params[:pass_key]).first || AndroidDevice.where(:pass_key => params[:pass_key]).first
 				if device
 					machine = Machine.new(:mac_address => params[:mac_address], :machine_name => params[:machine_name] || "Mac")
-#					machine.apn_device_id = device.id 
 #					machine.device = device
-					machine.device_id= device.id
-					machine.device_type = device.class.name
+					machine.phone_id= device.id
+					machine.phone_type = device.class.name
 					if machine.save
 						if device.update_attributes(:pass_key => nil)
 							#Send success message to Mac and push notification
@@ -128,21 +124,17 @@ module PushDialer
 			  error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
 		  	if params[:token]   # unpairing from device
 		  		device = ApnDevice.where(:token => params[:token]).first || AndroidDevice.where(:token => params[:token]).first
-		  		if device && device.machines.find_by_mac_address(params[:mac_address])  # machine belongs to that device from which request came 
-						machine = Machine.find_by_mac_address(params[:mac_address])# unpaired from device
-						machine.destroy if machine
-						device.machines
-						# Device successfully unpaired
-		  		else
-            # error message to device # unpairing failed
-            error!({ 'error' => 'unpairing failed' }, 412)# 412: Precondition Failed
-		  		end
+		  		machine = device.machines.where(:mac_address => params[:mac_address]).first if device
+          error!({ 'error' => 'unpairing failed' }, 412) unless machine and machine.destroy # 412: Precondition Failed
+#						device.machines  #Earlier response
+						{ 'Response' => 'Unpairing Successful' }
 		  	else
-		  		machine = Machine.find_by_mac_address(params[:mac_address])# unpaired from mac
-		  		if machine
-						machine.destroy
+		  		machine = Machine.where(:mac_address => params[:mac_address]).first# unpaired from mac
+		  		if machine and machine.destroy
+#						machine.destroy #if destroy
 						#Push notification to device
-						machine.device.notify_device( "#{machine.machine_name} unpaired." )
+						machine.phone.notify_device( "#{machine.machine_name} unpaired." )
+						{ 'Response' => 'Unpairing Successful' }
 		  		else
 		  			{ 'Response' => 'Machine already unpaired' }
 		  		end
@@ -153,18 +145,10 @@ module PushDialer
       # params -> MAC address, tel, sms (optional) 
 		  post '/connect' do
 		  	error!({ 'error' => "Mac Address Not Found" }, 412) unless params[:mac_address]
-		  	machine = Machine.find_by_mac_address(params[:mac_address])
-		  	if machine && params[:tel]
-					if params[:tel].to_i > 0 and params[:tel].size == 10 
-						machine.device.call_device(params[:tel], params[:sms])
-						{ 'Response' => 'Call Initiation Request Sent' }
-					else
-						error!({ 'error' => 'Invalid No.', 'Tel' => params[:tel] }, 401)
-					end
-		  	else
-		  		#Error message to machine
-          error!({ 'error' => 'Cant connect', 'params' => params[:mac_address] }, 401)
-		  	end 
+		  	machine = Machine.where(:mac_address => params[:mac_address]).first
+		  	error!({ 'error' => 'Cant connect' }, 401) unless machine && params[:tel]
+				machine.phone.call_device(params[:tel], params[:sms])
+				{ 'Response' => 'Call Initiation Request Sent' }
 		  end
 		  
 		end #resource machine
