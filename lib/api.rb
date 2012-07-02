@@ -11,9 +11,9 @@ module PushDialer
     
     version 'v1', :using => :path
     
-   rescue_from :all do |e|
-     rack_response({ :message => "rescued from #{e.class.name}" })
-   end
+#   rescue_from :all do |e|
+#     rack_response({ :message => "rescued from #{e.class.name}" })
+#   end
 
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
@@ -73,6 +73,13 @@ module PushDialer
         machine.phone.in_hash# if machine
       end
       
+      put '/reset' do
+      	error!({ 'error' => "Token Not Found" }, 412) unless params[:new_token] and params[:old_token]
+      	phone = ApnDevice.where(:token => params[:old_token]).first
+      	error!({ 'error' => "Cant update the token." }, 412) unless phone and phone.update_attributes(:token => params[:new_token])
+      	{ 'Response' => 'Token Changed' }
+      end
+      
     end #resource ApnDevice
     
     resource 'machines' do
@@ -85,8 +92,8 @@ module PushDialer
     		device = ApnDevice.where(:token => params[:token]).first || AndroidDevice.where(:token => params[:token]).first
 #    		{ 'Response' => 'No Device' } if !device
     		error!({ 'Response' => "No Device" }, 412) unless device
-#  			"{\"machines\": #{device.machines.to_json}}"
-  			{ 'machines' => device.machines.to_json }
+  			"{\"machines\": #{device.machines.to_json}}"
+#  			{ 'machines' => device.machines.to_json }
     	end
     	
       # Mac sends request to pair with an device. 
@@ -148,7 +155,7 @@ module PushDialer
 		  	machine = Machine.where(:mac_address => params[:mac_address]).first
 		  	error!({ 'error' => 'Cant connect' }, 401) unless machine && params[:tel]
 				machine.phone.call_device(params[:tel], params[:sms])
-				{ 'Response' => 'Call Initiation Request Sent' }
+				{ 'Response' => "Call Initiation Request Sent #{params[:sms]}" }
 		  end
 		  
 		end #resource machine
