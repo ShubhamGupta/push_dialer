@@ -11,9 +11,9 @@ module PushDialer
     
     version 'v1', :using => :path
     
-#   rescue_from :all do |e|
-#     rack_response({ :message => "rescued from #{e.class.name}" })
-#   end
+   rescue_from :all do |e|
+     rack_response({ :message => "rescued from #{e.class.name}" })
+   end
 
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
