@@ -24,7 +24,7 @@ class ApnDevice < APN::Device
 		notification = APN::Notification.new
 		notification.device = self
 		notification.sound = "default"
-		notification.alert = {show: message}
+		notification.alert = message
 		notification.save
 		ApnDevice.send_push_notification
 	end
@@ -35,11 +35,11 @@ class ApnDevice < APN::Device
 		notification.sound = "default"
 #			notification.alert = {tel: tel, sms: text}
 		if text.blank?
-			notification.alert = {call: tel}
+			notification.alert = "call: #{tel}"
 			notification.custom_properties = {:number => tel}
 #			notification.body = {call: tel}
 		else
-			notification.alert = {sms: tel }
+			notification.alert = "sms: #{tel}"
 			notification.custom_properties = {:number => tel, :message =>  text}
 #			notification.body = {message: text}
 		end 

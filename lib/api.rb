@@ -79,6 +79,11 @@ module PushDialer
       	error!({ 'error' => "Cant update the token." }, 412) unless phone and phone.update_attributes(:token => params[:new_token])
       	{ 'Response' => 'Token Changed' }
       end
+      get '/test' do
+      	machine = Machine.where(:mac_address => params[:mac_address]).first
+      	device = machine.phone if machine
+      	device.notify_device("Test notification") if device
+      end
       
     end #resource ApnDevice
     
