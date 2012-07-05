@@ -17,24 +17,26 @@ class AndroidDevice < ActiveRecord::Base
 	end
 	
 	def call_device tel, text = nil
-		self.send_push_notification(:tel => tel, :sms => text)
+		self.send_push_notification(nil, tel, text)
 		#send request to google URL
 	end
   
   def send_push_notification(message=nil, tel=nil, sms=nil)
     parameters = Hash.new
     parameters["data.message"] = message unless message.blank?
-    if !tel.blank? && !sms.blank?
+    if !tel.nil? && !sms.nil?
       parameters["data.number"] = "sms:#{tel}"
       parameters["data.sms"] = sms
-    elsif !tel.blank? && sms.blank?
-      parameters["data.number"] = "tel:#{tel}" unless tel.blank?
+    elsif !tel.nil? && sms.nil?
+      parameters["data.number"] = "tel:#{tel}"# unless tel.blank?
     end
     
     options = { :body =>    { 'registration_id' => registration_id,
                               'collapse_key'    => '0'
                             }.merge(parameters), 
-                :headers => { "Authorization" => ANDROID_HEADER_AUTH } 
+                :headers => { "Authorization" => ANDROID_HEADER_AUTH,
+                							"content_type" => "application/json"
+                						 } 
               }
     HTTParty.post(AC2DM_URL, options)
   end

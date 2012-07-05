@@ -1,3 +1,3 @@
-AC2DM_URL = "https://android.apis.google.com/c2dm/send"
-ANDROID_HEADER_AUTH = "GoogleLogin auth=DQAAAMUAAAA_IOKCkQc2emZ0ko1OYr8XAz5pjSR6JNeQJZoIdvBuk2zlZ3kxlvULmE8MrCM5tx5dv4Cjy6mtfW0cxNpL1kdZSPdzMOzVMP4nnUYZFm1YcM-6Q29byB9MqvQkeQ4JGsI36TNUvvGmBqLvG5dYa6IAu-S_OzKVCoyQz8LUhmaVFZ4XQzT6dS63H_zuZxWDckx2ZQ0qnpQnhEBEhtunYb7jEsq11uG-yFQtii04SuUDwMVWWSUDfqNGGWlNGQjF1Bvrruo_Nw8uxuT5CnLMD1eG"
+AC2DM_URL = "https://android.googleapis.com/gcm/send"
+ANDROID_HEADER_AUTH = "key=AIzaSyAhjL9dQT44iLRIEV88ZufVHlBBSach774"
 SAMPLE_ANDROID_REGISTRATION_ID = "APA91bFJfMfqqtyjoGAOEzVx8YGxsiXbIuRS8SmCfiFBSIslmlBjRKin4pDTiYtr6ie7OELlsTgmMz4oege7Zf8"
