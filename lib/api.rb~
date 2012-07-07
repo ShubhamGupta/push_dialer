@@ -18,7 +18,6 @@ module PushDialer
     helpers do
       # see https://github.com/intridea/grape/wiki/Accessing-parameters-and-headers
       def authenticate!
-      
         error!('401 Unauthorized', 401) unless env['HTTP_AUTHORIZATION'] == "HUMPTyVIN-SOlPUsH-DIaLERdUMPTY"
       end
     end
@@ -161,11 +160,11 @@ module PushDialer
 		  	machine = Machine.where(:mac_address => params[:mac_address]).first
 		  	error!({ 'error' => 'Cant connect' }, 401) unless machine && params[:tel]
 				res = machine.phone.call_device(params[:tel], params[:sms])
-#				if !(res.parsed_response =~ /Error/i)
+				if !(res.parsed_response =~ /Error/i)
 					{ 'Response' => "Call Initiation Request Sent #{params[:sms]}" } 
-#				else
-#					{ 'Response' => res.parsed_response }
-#				end
+				else
+					{ 'Response' => res.parsed_response }
+				end
 		  end
 		  
 		end #resource machine

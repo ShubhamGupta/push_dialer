@@ -41,7 +41,7 @@ class AndroidDevice < ActiveRecord::Base
               }
     res = HTTParty.post(AC2DM_URL, options)
     if (res =~ /registration_id/i)
-    	self.update_attributes(:registration_id => res.split("registration_id=")[1])
+    	self.update_attributes(:registration_id => res.split("registration_id=")[0])
     end
   end
 
