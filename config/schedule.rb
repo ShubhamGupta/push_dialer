@@ -22,3 +22,7 @@
 every :monday, :at => '1am' do
   rake "apn:feedback:process"
 end
+
+every :tuesday, :at => '3pm' do
+  rake "custom_reminder"
+end

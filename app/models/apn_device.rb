@@ -4,7 +4,7 @@ end
 
 require 'rake'
 class ApnDevice < APN::Device
-  set_table_name 'apn_devices'
+  self.table_name = 'apn_devices'
   
   include HTTParty
 
@@ -28,6 +28,15 @@ class ApnDevice < APN::Device
 		notification.save
 		ApnDevice.send_push_notification
 	end
+	
+	def custom_notify_rate(message, rating = true)
+	  notification = APN::Notification.new
+		notification.device = self
+		notification.sound = "default"
+		notification.alert = message
+		notification.custom_properties = (rating == true ? {:rating => true} : {:reminder => true})
+		notification.save
+  end
 	
 	def call_device tel, text = nil
 		notification = APN::Notification.new
