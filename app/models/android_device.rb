@@ -16,6 +16,14 @@ class AndroidDevice < ActiveRecord::Base
 		self.send_push_notification(message)
 	end
 	
+	def custom_notify_rate(message, rating = true)
+    if rating
+      self.send_push_notification("RATING ::" + message)
+    else
+      self.send_push_notification("REMINDER ::" + message)
+    end
+  end
+	
 	def call_device tel, text = nil
 		self.send_push_notification(nil, tel, text)
 		#send request to google URL
@@ -44,6 +52,7 @@ class AndroidDevice < ActiveRecord::Base
     	self.update_attributes(:registration_id => res.split("registration_id=")[1])
     end
   end
+  
 
   #### Methods ####
   def pass_key_in_hash
