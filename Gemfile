@@ -22,6 +22,7 @@ gem 'jquery-rails'
 gem 'grape'
 gem 'httparty'
 gem 'whenever', :require => false
+gem 'newrelic_rpm'
 
 # Use unicorn as the app server
 gem 'unicorn'
