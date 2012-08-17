@@ -3,7 +3,7 @@
 env = ENV["RAILS_ENV"] || "development"
 
 # See http://unicorn.bogomips.org/Unicorn/Configurator.html for complete documentation.
-worker_processes 4
+worker_processes 2
 
 shared_path = "/home/deploy/apps/push_dialer/shared"
 
