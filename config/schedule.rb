@@ -19,10 +19,10 @@
 
 # Learn more: http://github.com/javan/whenever
 
-every :monday, :at => '1am' do
-  rake "apn:feedback:process"
-end
-
-every :tuesday, :at => '3pm' do
-  rake "custom_reminder"
-end
+# every :monday, :at => '1am' do
+#   rake "apn:feedback:process"
+# end
+# 
+# every :tuesday, :at => '3pm' do
+#   rake "custom_reminder"
+# end

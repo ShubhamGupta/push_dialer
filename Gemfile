@@ -21,7 +21,7 @@ gem 'apn_on_rails', '>= 0.5'  #:git => 'https://github.com/natescherer/apn_on_ra
 gem 'jquery-rails'
 gem 'grape'
 gem 'httparty'
-gem 'whenever', :require => false
+# gem 'whenever', :require => false
 gem 'newrelic_rpm'
 
 # Use unicorn as the app server
