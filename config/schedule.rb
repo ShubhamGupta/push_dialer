@@ -19,6 +19,8 @@
 
 # Learn more: http://github.com/javan/whenever
 
+# env :MAILTO, 'anurag@vinsol.com'
+
 # every :monday, :at => '1am' do
 #   rake "apn:feedback:process"
 # end

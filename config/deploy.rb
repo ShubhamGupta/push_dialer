@@ -1,5 +1,5 @@
 require "bundler/capistrano"
-# require "whenever/capistrano"
+require "whenever/capistrano"
 
 set :scm,             :git
 set :repository,      "git@github.com:ShubhamGupta/push_dialer.git"
@@ -23,8 +23,8 @@ role :web,    "173.45.230.103"
 role :app,    "173.45.230.103"
 role :db,     "173.45.230.103", :primary => true
 
-# set :application, "push_dialer"
-# set :whenever_command, "bundle exec whenever"
+set :application, "push_dialer"
+set :whenever_command, "bundle exec whenever"
 
 set(:latest_release)  { fetch(:current_path) }
 set(:release_path)    { fetch(:current_path) }
